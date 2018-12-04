@@ -4,8 +4,13 @@ using UnityEngine;
 
 public class WanderAgentController : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
+    public float mass;
+    public float maxForce;
+    public float maxSpeed;
+    private Vector3 velocity;
+
+    // Use this for initialization
+    void Start () {
 		
 	}
 	
