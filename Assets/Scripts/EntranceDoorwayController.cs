@@ -14,12 +14,12 @@ public class EntranceDoorwayController : MonoBehaviour {
 		
 	}
 
-    /*
+    
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Traveller"))
         {
-            other.gameObject.GetComponent<Rigidbody>().isKinematic = true;
+            other.gameObject.GetComponent<Rigidbody>().detectCollisions = false;
         }
     }
 
@@ -27,8 +27,8 @@ public class EntranceDoorwayController : MonoBehaviour {
     {
         if (other.CompareTag("Traveller"))
         {
-            other.gameObject.GetComponent<Rigidbody>().isKinematic = false;
+            other.gameObject.GetComponent<Rigidbody>().detectCollisions = true;
         }
     }
-    */
+    
 }

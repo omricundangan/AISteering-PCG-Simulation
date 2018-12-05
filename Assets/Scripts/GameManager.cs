@@ -57,12 +57,19 @@ public class GameManager : MonoBehaviour {
 
     void SpawnAgent(GameObject agent, int num)
     {
-        Bounds b = playingField.GetComponent<Renderer>().bounds;
+        Bounds aBounds = agent.GetComponent<Renderer>().bounds;
+        Bounds field = playingField.GetComponent<Renderer>().bounds;
         Vector3 t = entranceDoorway.transform.position;
 
         for (int i = 0; i < num; i++)
         {
-            var a = Instantiate(agent, new Vector3(Random.Range(b.min.x, b.max.x), 0.225f, Random.Range(b.min.z, b.max.z)), Quaternion.identity);
+            Vector3 random = new Vector3(Random.Range(field.min.x, field.max.x), 0.225f, Random.Range(field.min.z, field.max.z));
+            while (Physics.CheckSphere(random, aBounds.size.magnitude*0.5f))
+            {
+                random = new Vector3(Random.Range(field.min.x, field.max.x), 0.225f, Random.Range(field.min.z, field.max.z));
+            }
+
+            var a = Instantiate(agent, random, Quaternion.identity);
             if(a.CompareTag("Wanderer"))
                 a.GetComponent<WanderAgentController>().maxSpeed = Random.Range(minSpeed, maxSpeed);
             else if(a.CompareTag("Socializer"))
@@ -79,7 +86,7 @@ public class GameManager : MonoBehaviour {
         {
             var a = Instantiate(agent, pos, Quaternion.identity);
             a.GetComponent<TravelAgentController>().maxSpeed = Random.Range(minSpeed, maxSpeed);
-            yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(0.5f);
         }
     }
 

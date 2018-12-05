@@ -214,7 +214,7 @@ BoxCollider:
   m_GameObject: {fileID: 1365097418879430}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -229,6 +229,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84944fe04ea6b844f822933efa054552, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mass: 5
+  maxForce: 10
+  maxSpeed: 5
+  MAX_SEE_AHEAD: 5
+  MAX_AVOID_FORCE: 10
+  CIRCLE_RADIUS: 4
+  CIRCLE_DISTANCE: 1.5
+  ANGLE_CHANGE: 90
+  target: {fileID: 0}
 --- !u!114 &114132195651349252
 MonoBehaviour:
   m_ObjectHideFlags: 1

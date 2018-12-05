@@ -23,29 +23,33 @@ public class TravelAgentController : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
-        Steer();
-
-       
+        Steer();  
     }
 
     void Steer() {
         var steering = Vector3.zero;
         steering += Seek(target);
-        steering += CollisionAvoidance();
+        //steering = CollisionAvoidance();
         steering = Vector3.ClampMagnitude(steering,  maxForce); // truncate(steering, max_force)
         steering = steering / mass; // acceleration
-
         velocity = Vector3.ClampMagnitude(velocity + steering, maxSpeed);
         transform.forward = velocity.normalized;
 
-        rb.MovePosition(transform.position + (velocity * Time.deltaTime));
+        
+        steering = CollisionAvoidance();
+        steering = Vector3.ClampMagnitude(steering, maxForce); // truncate(steering, max_force)
+        steering = steering / mass; // acceleration
+        velocity = Vector3.ClampMagnitude(velocity + steering, maxSpeed);
+        
+        //transform.position += velocity * Time.deltaTime;
         // rb.position = rb.position + (velocity * Time.deltaTime);
 
-        //transform.position += velocity * Time.deltaTime;
+        rb.MovePosition(transform.position + (velocity * Time.deltaTime));
+        transform.forward = velocity.normalized;
 
-        Debug.DrawRay(transform.position, velocity.normalized * 2, Color.green);
+        Debug.DrawRay(transform.position, velocity.normalized * MAX_SEE_AHEAD, Color.black);
         // Debug.DrawRay(transform.position, desiredVelocity.normalized * 2, Color.magenta);
     }
 
@@ -62,39 +66,29 @@ public class TravelAgentController : MonoBehaviour {
 
     Vector3 CollisionAvoidance()
     {
-        var dynamic_length = velocity.magnitude / maxSpeed;
+        // var dynamic_length = velocity.magnitude / maxSpeed;
         // var ahead = transform.position + (velocity.normalized * dynamic_length);
 
         var ahead = transform.position + (velocity.normalized * MAX_SEE_AHEAD);
         var ahead2 = transform.position + (velocity.normalized * (MAX_SEE_AHEAD * 0.5f));
 
-        Vector3 fwd = transform.TransformDirection(Vector3.forward);
+        // Vector3 fwd = transform.TransformDirection(Vector3.forward);
         RaycastHit hit;
-        var obstacle_center = Vector3.zero;
+        Vector3 avoidance_force = Vector3.zero;
 
-        if(Physics.SphereCast(transform.position, size/2, transform.forward, out hit, MAX_SEE_AHEAD)) {
-       // if (Physics.Raycast(transform.position, fwd, out hit, MAX_SEE_AHEAD)) {
-            print("detecting " + hit.transform.gameObject);
+        if (Physics.SphereCast(transform.position, size*0.5f, velocity, out hit, MAX_SEE_AHEAD))
+        {
             GameObject go = hit.transform.gameObject;
             if (go == GameManager.INSTANCE.exitDoorways[0] || go == GameManager.INSTANCE.exitDoorways[1]) return Vector3.zero;
-            print("avoiding " + go);
-            obstacle_center = go.transform.GetComponent<Renderer>().bounds.center;
+            var obstacle_center = go.transform.GetComponent<Renderer>().bounds.center;
             obstacle_center = new Vector3(obstacle_center.x, 0.225f, obstacle_center.z);
 
-            var avoidance_force = ahead - obstacle_center;
+            avoidance_force = ahead - obstacle_center;
             avoidance_force = avoidance_force.normalized * MAX_AVOID_FORCE;
-
-            return avoidance_force;
-        }
-        else
-        {
-            print(" ");
-
         }
 
-        return Vector3.zero;
+        return avoidance_force;
     }
-
 
     public void Respawn()
     {

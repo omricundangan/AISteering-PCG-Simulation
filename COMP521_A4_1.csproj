@@ -310,6 +310,7 @@
     <Compile Include="Assets\Scripts\EntranceDoorwayController.cs" />
     <Compile Include="Assets\Scripts\ExitDoorwayController.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\ObstacleGenerator.cs" />
     <Compile Include="Assets\Scripts\SocialAgentController.cs" />
     <Compile Include="Assets\Scripts\TravelAgentController.cs" />
     <Compile Include="Assets\Scripts\WanderAgentController.cs" />
