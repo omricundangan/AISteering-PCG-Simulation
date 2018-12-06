@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        SpawnObjects();
+        ObstacleGenerator.INSTANCE.GenerateAllObjects();
         SpawnAgent(wanderAgent, numWanderAgents);
         SpawnAgent(socialAgent, numSocialAgents);
         StartCoroutine(SpawnTraveller(travellingAgent, numTravellingAgents));
@@ -41,14 +41,6 @@ public class GameManager : MonoBehaviour {
     void Update () {
 		
 	}
-
-    void SpawnObjects()
-    {
-        for(int i = 0; i < numObjects; i++)
-        {
-            // spawn the object??
-        }
-    }
 
     void CreateObject()
     {
@@ -86,7 +78,7 @@ public class GameManager : MonoBehaviour {
         {
             var a = Instantiate(agent, pos, Quaternion.identity);
             a.GetComponent<TravelAgentController>().maxSpeed = Random.Range(minSpeed, maxSpeed);
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0f);
         }
     }
 

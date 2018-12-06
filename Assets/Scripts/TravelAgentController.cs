@@ -13,6 +13,9 @@ public class TravelAgentController : MonoBehaviour {
     public Transform target;
     private float size;
     private Rigidbody rb;
+    private bool turn = false;
+    public float timeOut;
+    public float timer = 0.0f;  // public just for debugging purposes
 
 	// Use this for initialization
 	void Start () {
@@ -25,9 +28,32 @@ public class TravelAgentController : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        Steer();  
+        if(timer > timeOut) // timeOut adjustable in Traveller prefab
+        {
+            ToggleTarget();
+            timer = 0.0f;
+        }
+        else
+        {
+            timer += Time.deltaTime;
+        }
+        if (turn) TurnAround();
+        else Steer();
     }
 
+    void ToggleTarget()
+    {
+        if(target.gameObject == GameManager.INSTANCE.exitDoorways[0])
+        {
+            target = GameManager.INSTANCE.exitDoorways[1].transform;
+        }
+        else
+        {
+            target = GameManager.INSTANCE.exitDoorways[0].transform;
+        }
+    }
+
+    // Sum Seek and Avoid forces into steering forces. Add to velocity and truncate based on max values.
     void Steer() {
         var steering = Vector3.zero;
         steering += Seek(target);
@@ -37,7 +63,8 @@ public class TravelAgentController : MonoBehaviour {
         velocity = Vector3.ClampMagnitude(velocity + steering, maxSpeed);
         transform.forward = velocity.normalized;
 
-        
+        // Apply seek force to the steering force and add to velocity.
+        // Calculate avoidance force based on new velocity with the added seek
         steering = CollisionAvoidance();
         steering = Vector3.ClampMagnitude(steering, maxForce); // truncate(steering, max_force)
         steering = steering / mass; // acceleration
@@ -45,7 +72,6 @@ public class TravelAgentController : MonoBehaviour {
         
         //transform.position += velocity * Time.deltaTime;
         // rb.position = rb.position + (velocity * Time.deltaTime);
-
         rb.MovePosition(transform.position + (velocity * Time.deltaTime));
         transform.forward = velocity.normalized;
 
@@ -64,15 +90,14 @@ public class TravelAgentController : MonoBehaviour {
         return desiredVelocity - velocity;
     }
 
+    // SphereCast in front of the agent a distance of MAX_SEE_AHEAD
+    // If there is sometihng, calculate the avoidance force based on the object
+    // otherwise, check if the agent is currently colliding with something and do the same
+    // Otherwise, no avoid force
     Vector3 CollisionAvoidance()
     {
-        // var dynamic_length = velocity.magnitude / maxSpeed;
-        // var ahead = transform.position + (velocity.normalized * dynamic_length);
-
         var ahead = transform.position + (velocity.normalized * MAX_SEE_AHEAD);
-        var ahead2 = transform.position + (velocity.normalized * (MAX_SEE_AHEAD * 0.5f));
 
-        // Vector3 fwd = transform.TransformDirection(Vector3.forward);
         RaycastHit hit;
         Vector3 avoidance_force = Vector3.zero;
 
@@ -86,7 +111,11 @@ public class TravelAgentController : MonoBehaviour {
             avoidance_force = ahead - obstacle_center;
             avoidance_force = avoidance_force.normalized * MAX_AVOID_FORCE;
         }
-
+        else if (Physics.Raycast(transform.position, velocity, out hit, size))
+        {
+            if (!hit.transform.gameObject.CompareTag("Obstacle")) return avoidance_force;
+            turn = true;
+        }
         return avoidance_force;
     }
 
@@ -94,5 +123,16 @@ public class TravelAgentController : MonoBehaviour {
     {
         GameObject doorway = GameManager.INSTANCE.entranceDoorway;
         transform.position = new Vector3(doorway.transform.position.x, 0.225f, doorway.transform.position.z);
+        timer = 0.0f;
+    }
+
+    void TurnAround()
+    {
+        transform.Rotate(new Vector3(0, 180, 0));
+        velocity = velocity * -1;
+        velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
+        rb.MovePosition(transform.position + (velocity * Time.deltaTime));
+        transform.forward = velocity.normalized;
+        turn = false;
     }
 }

@@ -20,6 +20,9 @@ public class SocialAgentController : MonoBehaviour
     public Transform target;
     private float size;
     private Rigidbody rb;
+    private bool turn;
+
+    public bool socializing;
 
     // Use this for initialization
     void Start()
@@ -30,16 +33,16 @@ public class SocialAgentController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
-        Steer();
+        if (turn) TurnAround();
+        else Steer();
     }
 
     void Steer()
     {
         if (maxSpeed == 0 || maxForce == 0) return;
         var steering = Vector3.zero;
-        if (target != null) steering += Seek(target);
         steering += Wander();
         steering += CollisionAvoidance();
         steering = Vector3.ClampMagnitude(steering, maxForce); // truncate(steering, max_force)
@@ -77,7 +80,6 @@ public class SocialAgentController : MonoBehaviour
         return desiredVelocity - velocity;
     }
 
-
     Vector3 Wander()
     {
         Vector3 circleCenter = velocity.normalized * CIRCLE_DISTANCE;
@@ -99,34 +101,37 @@ public class SocialAgentController : MonoBehaviour
 
     Vector3 CollisionAvoidance()
     {
-        // var dynamic_length = velocity.magnitude / maxSpeed;
-        // var ahead = transform.position + (velocity.normalized * dynamic_length);
-
         var ahead = transform.position + (velocity.normalized * MAX_SEE_AHEAD);
-        var ahead2 = transform.position + (velocity.normalized * (MAX_SEE_AHEAD * 0.5f));
 
-        // Vector3 fwd = transform.TransformDirection(Vector3.forward);
         RaycastHit hit;
         Vector3 avoidance_force = Vector3.zero;
 
         if (Physics.SphereCast(transform.position, size / 2, transform.forward, out hit, MAX_SEE_AHEAD))
         {
-            // if (Physics.Raycast(transform.position, fwd, out hit, MAX_SEE_AHEAD)) {
             GameObject go = hit.transform.gameObject;
-            //print("detecting " + go);
-            //print("avoiding " + go);
             var obstacle_center = go.transform.GetComponent<Renderer>().bounds.center;
             obstacle_center = new Vector3(obstacle_center.x, 0.225f, obstacle_center.z);
 
             avoidance_force = ahead - obstacle_center;
             avoidance_force = avoidance_force.normalized * MAX_AVOID_FORCE;
         }
-        //else print(" ");
-
+        else if (Physics.Raycast(transform.position, velocity, out hit, size))
+        {
+            if (!hit.transform.gameObject.CompareTag("Obstacle")) return avoidance_force;
+            turn = true;
+        }
         return avoidance_force;
     }
 
-
+    void TurnAround()
+    {
+        transform.Rotate(new Vector3(0, 180, 0));
+        velocity = velocity * -1;
+        velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
+        rb.MovePosition(transform.position + (velocity * Time.deltaTime));
+        transform.forward = velocity.normalized;
+        turn = false;
+    }
 
     public void Respawn()
     {
