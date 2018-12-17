@@ -312,6 +312,7 @@
     <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\ObstacleGenerator.cs" />
     <Compile Include="Assets\Scripts\SocialAgentController.cs" />
+    <Compile Include="Assets\Scripts\SteerBehaviour.cs" />
     <Compile Include="Assets\Scripts\TravelAgentController.cs" />
     <Compile Include="Assets\Scripts\WanderAgentController.cs" />
   </ItemGroup>
